@@ -31,11 +31,7 @@ with open('user_messages', 'r+') as f:
                 print('Dat is geen ja of nee')
 
         f.seek(0)
-        print(line)
-        #TODO: remove messages
-        if line != lines.index[pointer]:
-            f.write(line)
-        pointer += 1
+        f.truncate()
 
 
 def connect():
