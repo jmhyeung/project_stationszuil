@@ -15,10 +15,11 @@ while True:
     print('Uw bericht is te lang.')
 
 timestamp = datetime.now()
+current_time = timestamp.strftime("%d-%B-%Y, \t\t%H:%M:%S")
 
 with open('stations') as f:
     stations = f.readlines()
     station = random.choice(stations)
 
 with open('user_messages', 'a') as f:
-    f.write(f'{user_message}, \t\t{timestamp.strftime("%d-%B-%Y, %H:%M:%S")}, \t\t{user_name}, \t\t{station}')
+    f.write(f'{user_message}, \t\t{current_time}, \t\t{user_name}, \t\t{station}')

@@ -7,34 +7,32 @@ mail_mod = input('Moderator\'s email-adres:\n')
 
 timestamp = datetime.now()
 
-with open('user_messages', 'r') as f:
+with open('user_messages', 'r+') as f:
     lines = f.readlines()
     info_message = []
 
-    for line in lines:
-        print(line.replace('\t\t', '').replace('\n', ''))
-        struct_line = line.replace('\t\t', '').replace('\n', '').replace(',', '')
+for line in lines:
+    print(line.replace('\t\t', '').replace('\n', ''))
+    line = line.replace('\n', '')
 
-        #TODO: Is it approved or not then connect it to a database
+    is_approved = -1
+
+    while is_approved == -1:
         approval = input('Is het bericht goedgekeurd (Ja of nee)?\n')
 
-        while True:
-            if approval.lower()[0] == 'j':
-                info_message.append(struct_line + ' 1 ' + timestamp.strftime("%d-%B-%Y %H:%M:%S") + ' '
-                                    + name_mod + ' ' + mail_mod)
-                break
-            elif approval.lower()[0] == 'n':
-                info_message.append(struct_line + ' 0 ' + timestamp.strftime("%d-%B-%Y %H:%M:%S") + ' '
-                                    + name_mod + ' ' + mail_mod)
-                break
-            else:
-                print('Dat is geen ja of nee')
+        if approval.lower()[0] == 'j':
+            is_approved = 1
+        elif approval.lower()[0] == 'n':
+            is_approved = 0
+        else:
+            print('Dat is geen ja of nee')
+
+    user_time = timestamp.strftime("%d-%B-%Y, \t\t%H:%M:%S")
+    info_message.append(f'{line}, \t\t{is_approved}, \t\t{user_time}, \t\t{name_mod}, \t\t{mail_mod}')
 
 
-        #TODO: remove messages
-
-for x in info_message:
-    print(x)
+with open('user_messages', 'w') as f:
+    pass
 
 
 def connect():
@@ -51,24 +49,21 @@ def connect():
         print(db_version)
 
         for message in info_message:
+            struct_message = message.split(', \t\t')
 
-            struct_message = message.split()
-            print(struct_message)
-
-            cursor.execute('INSERT INTO public.user_message(message, date, time, name, station)'
-                           'VALUES (%s, %s, %s, %s, %s)',
-                           (struct_message[0],
-                            struct_message[1],
-                            struct_message[2],
-                            struct_message[3],
-                            struct_message[4]))
-
-            cursor.execute('INSERT INTO public.approved_message(approved, date, mod_name, mod_email)'
-                           'VALUES (%s, %s, %s, %s)',
-                           (struct_message[5],
-                            struct_message[6],
-                            struct_message[7],
-                            struct_message[8]))
+            cursor.execute('INSERT INTO public.user_message('
+                           'user_message,'
+                           'user_date,'
+                           'user_time,'
+                           'user_name,'
+                           'station,'
+                           'approved,'
+                           'mod_date,'
+                           'mod_time,'
+                           'mod_name,'
+                           'mod_email)'
+                           'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                           struct_message)
 
         connection.commit()
         cursor.close()
