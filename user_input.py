@@ -17,6 +17,7 @@ while True:
 timestamp = datetime.now()
 current_time = timestamp.strftime("%d-%B-%Y, \t\t%H:%M:%S")
 
+# Random station
 with open('stations') as f:
     stations = f.readlines()
     station = random.choice(stations)

@@ -12,14 +12,15 @@ with open('user_messages', 'r+') as f:
     info_message = []
 
 for line in lines:
-    print(line.replace('\t\t', '').replace('\n', ''))
-    line = line.replace('\n', '')
+    print(line.replace('\t\t', '').replace('\n', ''))   # Make the lines readable for the moderator
+    line = line.replace('\n', '')   # Make the line readable for the program
 
     is_approved = -1
 
     while is_approved == -1:
         approval = input('Is het bericht goedgekeurd (Ja of nee)?\n')
 
+        # Check if the message is approved or not
         if approval.lower()[0] == 'j':
             is_approved = 1
         elif approval.lower()[0] == 'n':
@@ -28,13 +29,16 @@ for line in lines:
             print('Dat is geen ja of nee')
 
     user_time = timestamp.strftime("%d-%B-%Y, \t\t%H:%M:%S")
+    # Append all the information to a list
     info_message.append(f'{line}, \t\t{is_approved}, \t\t{user_time}, \t\t{name_mod}, \t\t{mail_mod}')
 
+# Delete the content in 'user_messages' file
 with open('user_messages', 'w') as f:
     pass
 
 
 def connect():
+    # Makes a connection with the database
     connection = None
     try:
         params = config()
@@ -50,6 +54,7 @@ def connect():
         for message in info_message:
             struct_message = message.split(', \t\t')
 
+            # Split the list and commit all the information to the database
             cursor.execute('INSERT INTO public.user_message('
                            'user_message,'
                            'user_date,'
