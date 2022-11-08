@@ -30,7 +30,6 @@ for line in lines:
     user_time = timestamp.strftime("%d-%B-%Y, \t\t%H:%M:%S")
     info_message.append(f'{line}, \t\t{is_approved}, \t\t{user_time}, \t\t{name_mod}, \t\t{mail_mod}')
 
-
 with open('user_messages', 'w') as f:
     pass
 

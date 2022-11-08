@@ -1,18 +1,16 @@
 from tkinter import *
-from tkinter.ttk import *
 import psycopg2
 from config import config
+import time
 
 WIDTH = 780
-HEIGHT = 520
+HEIGHT = 400
 
 root = Tk()
 
 root.title('Stationshalscherm')
-root.geometry(f'{WIDTH}x{HEIGHT}')
-
-frame = Frame(root, width=WIDTH, height=HEIGHT)
-frame.grid(row=0, column=0, sticky='NW')
+canvas = Canvas(root, height=HEIGHT, width=WIDTH)
+canvas.pack()
 
 # # lbl = Label(window, text='Hello World!', font=('Arial Bold', 50))
 # # lbl.grid(column=0, row=0)
@@ -40,33 +38,61 @@ try:
     cursor = connection.cursor()
     print('PostgreSQL database version: ')
     cursor.execute('SELECT version()')
-    db_version = cursor.fetchone()
+    db_version, = cursor.fetchone()
     print(db_version)
 
-    cursor.execute( 'SELECT SS.station_city, SS.country, SS.ov_bike, SS.elevator, SS.toilet, SS.park_and_ride '
-                    'FROM public.user_message as UM JOIN public.station_service as SS ON station = station_city '
-                    'ORDER BY user_date, user_time DESC LIMIT 5')
+    cursor.execute('SELECT UM.user_message,'
+                   'SS.station_city, SS.country, SS.ov_bike, SS.elevator, SS.toilet, SS.park_and_ride '
+                   'FROM public.user_message as UM JOIN public.station_service as SS ON station = station_city '
+                   'WHERE approved = 1 '
+                   'ORDER BY user_date, user_time DESC LIMIT 5')
 
     messages = list(cursor.fetchall())
 
-    lbl1 = Label(root, text=f'{messages[-5][1]}\n{messages[-5][5]}', font='Arial 17 bold')
-    lbl2 = Label(root, text=f'{messages[-4][1]}\n{messages[-4][5]}', font='Arial 17 bold')
-    lbl3 = Label(root, text=f'{messages[-3][1]}\n{messages[-3][5]}', font='Arial 17 bold')
-    lbl4 = Label(root, text=f'{messages[-2][1]}\n{messages[-2][5]}', font='Arial 17 bold')
-    lbl5 = Label(root, text=f'{messages[-1][1]}\n{messages[-1][5]}', font='Arial 17 bold')
+    msg = []
 
-    lbl1.place(relx=0.5, rely=0.1, anchor=CENTER)
-    lbl2.place(relx=0.5, rely=0.3, anchor=CENTER)
-    lbl3.place(relx=0.5, rely=0.5, anchor=CENTER)
-    lbl4.place(relx=0.5, rely=0.7, anchor=CENTER)
-    lbl5.place(relx=0.5, rely=0.9, anchor=CENTER)
+    for i in messages:
+        temp_list = [i[0], i[1]]
+
+        if i[3]:
+            temp_list.append('ov bike')
+        if i[4]:
+            temp_list.append('elevator')
+        if i[5]:
+            temp_list.append('toilet')
+        if i[6]:
+            temp_list.append('park and ride')
+
+        msg.append(temp_list)
+
+    print(msg)
 
     cursor.close()
+
 except(Exception, psycopg2.DatabaseError) as error:
     print(error)
 finally:
     if connection is not None:
         connection.close()
         print('Database connection terminated.')
+
+
+    station_frame = Frame(root, bg='white')
+    station_frame.place(relx=0.2, relwidth=0.6, relheight=0.2)
+
+    station_label = Label(station_frame, text=msg[0][1], font='Arial 25 bold', bg='white', fg='black')
+    station_label.place(relx=0.25, rely=0.25, relwidth=0.5, relheight=0.5)
+
+    message_frame = Frame(root, bg='purple')
+    message_frame.place(relx=0.2, rely=0.2, relwidth=0.6, relheight=0.6)
+
+    message_label = Label(message_frame, text=msg[0][0], font='Arial 18 bold', bg='white')
+    message_label.place(relx=0.5, rely=0.5, relwidth=1, relheight=1, anchor=CENTER)
+
+    facility_frame = Frame(root, bg='cyan')
+    facility_frame.place(relx=0.2, rely=0.8, relwidth=0.6, relheight=0.2)
+
+    facility_label = Label(facility_frame, text=f'Er zijn: {msg[0][2:]} beschikbaar', font='Arial 12 bold')
+    facility_label.place(relx=0.1, rely=0.7, relwidth=1, relheight=1, anchor=W)
 
 root.mainloop()
